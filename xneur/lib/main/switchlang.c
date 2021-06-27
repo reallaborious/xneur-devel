@@ -47,39 +47,67 @@ int get_curr_keyboard_group(void)
 
 void set_keyboard_group(int layout_group)
 {
-	XkbLockGroup(main_window->display, XkbUseCoreKbd, layout_group);
+	//XkbLockGroup(main_window->display, XkbUseCoreKbd, layout_group);
 
 	//Gsettings hack
 	/*char *gsettings_command = malloc(1024 * sizeof(char));
 	sprintf(gsettings_command, "gsettings set org.gnome.desktop.input-sources current %d", layout_group); 
 	log_message (DEBUG, gsettings_command);
 	if (system(gsettings_command)) {};*/
+	
+	//FUCK THIS Устал.. не знаю почему находит 3 раскладки. Пусть будет пока так.
+        if (layout_group > 1)
+                layout_group = 0;
+
+	//gdbus hack
+        char *gsettings_command = malloc(1024 * sizeof(char));
+        sprintf(gsettings_command, "gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval  \"imports.ui.status.keyboard.getInputSourceManager().inputSources[%d].activate()\"", layout_group);
+        log_message (DEBUG, gsettings_command);
+        if (system(gsettings_command)) {};
+
 }
 
 void set_next_keyboard_group(struct _xneur_handle *handle)
 {
 	int new_layout_group = get_curr_keyboard_group() + 1;
-	if (new_layout_group == handle->total_languages)
+	//if (new_layout_group >= handle->total_languages)
+	if (new_layout_group > 1)
 		new_layout_group = 0;
-	XkbLockGroup(main_window->display, XkbUseCoreKbd, new_layout_group);
+	log_message (DEBUG, "handle->total_languages = %d",handle->total_languages);
+//	XkbLockGroup(main_window->display, XkbUseCoreKbd, new_layout_group);
 
 	//Gsettings hack
 	/*char *gsettings_command = malloc(1024 * sizeof(char));
 	sprintf(gsettings_command, "gsettings set org.gnome.desktop.input-sources current %d", new_layout_group); 
 	log_message (DEBUG, gsettings_command);
 	if (system(gsettings_command)) {};*/
+
+	//gdbus hack
+        char *gsettings_command = malloc(1024 * sizeof(char));
+        sprintf(gsettings_command, "gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval  \"imports.ui.status.keyboard.getInputSourceManager().inputSources[%d].activate()\"", new_layout_group);
+        log_message (DEBUG, gsettings_command);
+        if (system(gsettings_command)) {};
+
 }
 
 void set_prev_keyboard_group(struct _xneur_handle *handle)
 {
 	int new_layout_group = get_curr_keyboard_group() - 1;
 	if (new_layout_group < 0)
-		new_layout_group = handle->total_languages - 1;
-	XkbLockGroup(main_window->display, XkbUseCoreKbd, new_layout_group);
+		new_layout_group = 1;
+	log_message (DEBUG, "handle->total_languages = %d",handle->total_languages);
+//	XkbLockGroup(main_window->display, XkbUseCoreKbd, new_layout_group);
 
 	// Gsettings hack
 	/*char *gsettings_command = malloc(1024 * sizeof(char));
 	sprintf(gsettings_command, "gsettings set org.gnome.desktop.input-sources current %d", new_layout_group); 
 	log_message (DEBUG, gsettings_command);
 	if (system(gsettings_command)) {};*/
+
+	//gdbus hack
+        char *gsettings_command = malloc(1024 * sizeof(char));
+        sprintf(gsettings_command, "gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval  \"imports.ui.status.keyboard.getInputSourceManager().inputSources[%d].activate()\"", new_layout_group);
+        log_message (DEBUG, gsettings_command);
+        if (system(gsettings_command)) {};
+
 }
