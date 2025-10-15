@@ -22,6 +22,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <pwd.h>
 #include <errno.h>
 
 #include "types.h"
@@ -40,6 +41,21 @@ static int get_max_path_len(void)
 	if (max_path_len <= 0)
 		return DEFAULT_MAX_PATH;
 	return max_path_len;
+}
+
+// Return the current user's home directory in a robust way.
+// Falls back to passwd database if HOME is unset; returns "." as last resort.
+static const char* get_home_dir(void)
+{
+    const char *home = getenv("HOME");
+    if (home && home[0] != '\0') {
+        return home;
+    }
+    struct passwd *pw = getpwuid(getuid());
+    if (pw && pw->pw_dir && pw->pw_dir[0] != '\0') {
+        return pw->pw_dir;
+    }
+    return ".";
 }
 
 char* get_file_content(const char *file_name)
@@ -102,11 +118,12 @@ char* get_file_path_name(const char *dir_name, const char *file_name)
 	if (strstr(path_file, "/") != NULL)
 		return path_file;
 
-	// Search conf in ~/.xneur
-	if (dir_name == NULL)
-		snprintf(path_file, max_path_len, "%s/%s/%s", getenv("HOME"), HOME_CONF_DIR, file_name);
-	else
-		snprintf(path_file, max_path_len, "%s/%s/%s/%s", getenv("HOME"), HOME_CONF_DIR, dir_name, file_name);
+    // Search conf in ~/.xneur (robust even if HOME is unset)
+    const char *home_dir = get_home_dir();
+    if (dir_name == NULL)
+        snprintf(path_file, max_path_len, "%s/%s/%s", home_dir, HOME_CONF_DIR, file_name);
+    else
+        snprintf(path_file, max_path_len, "%s/%s/%s/%s", home_dir, HOME_CONF_DIR, dir_name, file_name);
 
 	FILE *stream = fopen(path_file, "r");
 	if (stream != NULL)
@@ -120,10 +137,10 @@ char* get_file_path_name(const char *dir_name, const char *file_name)
 	SEARCH_IN(PACKAGE_SHAREDIR_DIR);
 
 	// Returning default in ~/.xneur
-	if (dir_name == NULL)
-		snprintf(path_file, max_path_len, "%s/%s/%s", getenv("HOME"), HOME_CONF_DIR, file_name);
-	else
-		snprintf(path_file, max_path_len, "%s/%s/%s/%s", getenv("HOME"), HOME_CONF_DIR, dir_name, file_name);
+    if (dir_name == NULL)
+        snprintf(path_file, max_path_len, "%s/%s/%s", home_dir, HOME_CONF_DIR, file_name);
+    else
+        snprintf(path_file, max_path_len, "%s/%s/%s/%s", home_dir, HOME_CONF_DIR, dir_name, file_name);
 
 	return path_file;
 }
@@ -134,19 +151,20 @@ char* get_home_file_path_name(const char *dir_name, const char *file_name)
 	int max_path_len = get_max_path_len();
 	char *path_file = (char *) malloc((max_path_len + 1) * sizeof(char));
 
-	if (dir_name == NULL)
-	{
-		int written = snprintf(path_file, max_path_len, "%s/%s", getenv("HOME"), HOME_CONF_DIR);
+    const char *home_dir = get_home_dir();
+    if (dir_name == NULL)
+    {
+        int written = snprintf(path_file, max_path_len, "%s/%s", home_dir, HOME_CONF_DIR);
 		if (written <= 0 || (mkdir(path_file, mode) != 0 && errno != EEXIST))
 		{
 			free(path_file);
 			return NULL;
 		}
-		snprintf(path_file, max_path_len - written, "%s/%s/%s", getenv("HOME"), HOME_CONF_DIR, file_name);
+        snprintf(path_file, max_path_len - written, "%s/%s/%s", home_dir, HOME_CONF_DIR, file_name);
 	}
 	else
 	{
-		int written = snprintf(path_file, max_path_len, "%s/%s", getenv("HOME"), HOME_CONF_DIR);
+        int written = snprintf(path_file, max_path_len, "%s/%s", home_dir, HOME_CONF_DIR);
 		if (written <= 0 || (mkdir(path_file, mode) != 0 && errno != EEXIST))
 		{
 			free(path_file);
@@ -156,7 +174,7 @@ char* get_home_file_path_name(const char *dir_name, const char *file_name)
 		char *dir = strdup(dir_name);
 		char* iter = dir;
 		char *dir_part = strsep(&iter, DIR_SEPARATOR);
-		written = snprintf(path_file, max_path_len, "%s/%s/%s", getenv("HOME"), HOME_CONF_DIR, dir_part);
+        written = snprintf(path_file, max_path_len, "%s/%s/%s", home_dir, HOME_CONF_DIR, dir_part);
 		if (written <= 0 || (mkdir(path_file, mode) != 0 && errno != EEXIST))
 		{
 			free(path_file);
@@ -185,7 +203,7 @@ char* get_home_file_path_name(const char *dir_name, const char *file_name)
 			free(path_file);
 			return NULL;
 		}
-		snprintf(path_file, max_path_len, "%s/%s/%s/%s", getenv("HOME"), HOME_CONF_DIR, dir_name, file_name);
+        snprintf(path_file, max_path_len, "%s/%s/%s/%s", home_dir, HOME_CONF_DIR, dir_name, file_name);
 	}
 	return path_file;
 }
