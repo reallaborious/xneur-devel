@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "xneur.h"
 
@@ -36,78 +37,109 @@
 
 extern struct _window *main_window;
 
+// Try to switch GNOME input source using gdbus/gsettings. Returns non-zero on success.
+static int try_switch_via_gnome(int layout_group)
+{
+    const char *js_patterns[] = {
+        "imports.ui.status.keyboard.getInputSourceManager().inputSources[%d].activate()", // GNOME 3.x/40
+        "global.get_input_source_manager().inputSources[%d].activate()",                 // GNOME 42+
+        "Main.inputMethod.inputSources[%d].activate()"                                   // Some downstream variants
+    };
+
+    char cmd[512];
+    for (size_t i = 0; i < sizeof(js_patterns) / sizeof(js_patterns[0]); i++) {
+        char js[256];
+        snprintf(js, sizeof(js), js_patterns[i], layout_group);
+        snprintf(cmd, sizeof(cmd),
+                 "gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval \"%s\"",
+                 js);
+        log_message(DEBUG, cmd);
+        if (system(cmd) == 0) {
+            return 1;
+        }
+    }
+
+    // Fallback to gsettings (supported by GNOME)
+    snprintf(cmd, sizeof(cmd),
+             "gsettings set org.gnome.desktop.input-sources current %d",
+             layout_group);
+    log_message(DEBUG, cmd);
+    if (system(cmd) == 0) {
+        return 1;
+    }
+
+    return 0;
+}
+
 int get_curr_keyboard_group(void)
 {
-	XkbStateRec xkbState;
-	XkbGetState(main_window->display, XkbUseCoreKbd, &xkbState);
-	int group = xkbState.group;
-	//XFree(xkbState);
-	return group;
+    // Prefer XKB when running under X11; on Wayland prefer GSettings
+    const char *sess = getenv("XDG_SESSION_TYPE");
+    if (!sess || strcmp(sess, "x11") == 0) {
+        XkbStateRec xkbState;
+        XkbGetState(main_window->display, XkbUseCoreKbd, &xkbState);
+        return xkbState.group;
+    }
+
+    FILE *fp = popen("gsettings get org.gnome.desktop.input-sources current", "r");
+    if (fp) {
+        char out[64] = {0};
+        if (fgets(out, sizeof(out), fp) != NULL) {
+            int idx = 0;
+            for (char *p = out; *p; ++p) {
+                if (*p >= '0' && *p <= '9') { idx = (int)strtol(p, NULL, 10); break; }
+            }
+            pclose(fp);
+            return idx;
+        }
+        pclose(fp);
+    }
+
+    // Last resort
+    return 0;
 }
 
 void set_keyboard_group(int layout_group)
 {
-	//XkbLockGroup(main_window->display, XkbUseCoreKbd, layout_group);
+    int switched = 0;
 
-	//Gsettings hack
-	/*char *gsettings_command = malloc(1024 * sizeof(char));
-	sprintf(gsettings_command, "gsettings set org.gnome.desktop.input-sources current %d", layout_group); 
-	log_message (DEBUG, gsettings_command);
-	if (system(gsettings_command)) {};*/
-	
-	//FUCK THIS Устал.. не знаю почему находит 3 раскладки. Пусть будет пока так.
-        if (layout_group > 1)
-                layout_group = 0;
+    const char *sess = getenv("XDG_SESSION_TYPE");
+    int is_x11 = (!sess || strcmp(sess, "x11") == 0);
 
-	//gdbus hack
-        char *gsettings_command = malloc(1024 * sizeof(char));
-        sprintf(gsettings_command, "gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval  \"imports.ui.status.keyboard.getInputSourceManager().inputSources[%d].activate()\"", layout_group);
-        log_message (DEBUG, gsettings_command);
-        if (system(gsettings_command)) {};
+    if (is_x11) {
+        // Try native XKB first
+        if (XkbLockGroup(main_window->display, XkbUseCoreKbd, layout_group)) {
+            switched = 1;
+        }
+    }
 
+    if (!switched) {
+        // Try GNOME Shell / GSettings
+        switched = try_switch_via_gnome(layout_group);
+    }
+
+    if (!switched && !is_x11) {
+        // As a last fallback (useful under XWayland)
+        XkbLockGroup(main_window->display, XkbUseCoreKbd, layout_group);
+    }
 }
 
 void set_next_keyboard_group(struct _xneur_handle *handle)
 {
-	int new_layout_group = get_curr_keyboard_group() + 1;
-	//if (new_layout_group >= handle->total_languages)
-	if (new_layout_group > 1)
-		new_layout_group = 0;
-	log_message (DEBUG, "handle->total_languages = %d",handle->total_languages);
-//	XkbLockGroup(main_window->display, XkbUseCoreKbd, new_layout_group);
+    int total = (handle && handle->total_languages > 0) ? handle->total_languages : 2;
+    int current = get_curr_keyboard_group();
+    int new_layout_group = (current + 1) % total;
+    log_message (DEBUG, "handle->total_languages = %d", handle ? handle->total_languages : -1);
 
-	//Gsettings hack
-	/*char *gsettings_command = malloc(1024 * sizeof(char));
-	sprintf(gsettings_command, "gsettings set org.gnome.desktop.input-sources current %d", new_layout_group); 
-	log_message (DEBUG, gsettings_command);
-	if (system(gsettings_command)) {};*/
-
-	//gdbus hack
-        char *gsettings_command = malloc(1024 * sizeof(char));
-        sprintf(gsettings_command, "gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval  \"imports.ui.status.keyboard.getInputSourceManager().inputSources[%d].activate()\"", new_layout_group);
-        log_message (DEBUG, gsettings_command);
-        if (system(gsettings_command)) {};
-
+    set_keyboard_group(new_layout_group);
 }
 
 void set_prev_keyboard_group(struct _xneur_handle *handle)
 {
-	int new_layout_group = get_curr_keyboard_group() - 1;
-	if (new_layout_group < 0)
-		new_layout_group = 1;
-	log_message (DEBUG, "handle->total_languages = %d",handle->total_languages);
-//	XkbLockGroup(main_window->display, XkbUseCoreKbd, new_layout_group);
+    int total = (handle && handle->total_languages > 0) ? handle->total_languages : 2;
+    int current = get_curr_keyboard_group();
+    int new_layout_group = (current - 1 + total) % total;
+    log_message (DEBUG, "handle->total_languages = %d", handle ? handle->total_languages : -1);
 
-	// Gsettings hack
-	/*char *gsettings_command = malloc(1024 * sizeof(char));
-	sprintf(gsettings_command, "gsettings set org.gnome.desktop.input-sources current %d", new_layout_group); 
-	log_message (DEBUG, gsettings_command);
-	if (system(gsettings_command)) {};*/
-
-	//gdbus hack
-        char *gsettings_command = malloc(1024 * sizeof(char));
-        sprintf(gsettings_command, "gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval  \"imports.ui.status.keyboard.getInputSourceManager().inputSources[%d].activate()\"", new_layout_group);
-        log_message (DEBUG, gsettings_command);
-        if (system(gsettings_command)) {};
-
+    set_keyboard_group(new_layout_group);
 }
