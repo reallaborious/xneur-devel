@@ -73,55 +73,46 @@ static int try_switch_via_gnome(int layout_group)
 
 int get_curr_keyboard_group(void)
 {
-    // Prefer XKB when running under X11; on Wayland prefer GSettings
     const char *sess = getenv("XDG_SESSION_TYPE");
-    if (!sess || strcmp(sess, "x11") == 0) {
-        XkbStateRec xkbState;
-        XkbGetState(main_window->display, XkbUseCoreKbd, &xkbState);
-        return xkbState.group;
-    }
+    const char *desktop = getenv("XDG_CURRENT_DESKTOP");
+    int prefer_gsettings = (desktop && strstr(desktop, "GNOME") != NULL);
 
-    FILE *fp = popen("gsettings get org.gnome.desktop.input-sources current", "r");
-    if (fp) {
-        char out[64] = {0};
-        if (fgets(out, sizeof(out), fp) != NULL) {
-            int idx = 0;
-            for (char *p = out; *p; ++p) {
-                if (*p >= '0' && *p <= '9') { idx = (int)strtol(p, NULL, 10); break; }
+    if (prefer_gsettings || (sess && strcmp(sess, "wayland") == 0)) {
+        FILE *fp = popen("gsettings get org.gnome.desktop.input-sources current", "r");
+        if (fp) {
+            char out[64] = {0};
+            if (fgets(out, sizeof(out), fp) != NULL) {
+                int idx = 0;
+                for (char *p = out; *p; ++p) {
+                    if (*p >= '0' && *p <= '9') { idx = (int)strtol(p, NULL, 10); break; }
+                }
+                pclose(fp);
+                return idx;
             }
             pclose(fp);
-            return idx;
         }
-        pclose(fp);
     }
 
-    // Last resort
-    return 0;
+    // Fallback to XKB state
+    XkbStateRec xkbState;
+    XkbGetState(main_window->display, XkbUseCoreKbd, &xkbState);
+    return xkbState.group;
 }
 
 void set_keyboard_group(int layout_group)
 {
-    int switched = 0;
-
     const char *sess = getenv("XDG_SESSION_TYPE");
+    const char *desktop = getenv("XDG_CURRENT_DESKTOP");
     int is_x11 = (!sess || strcmp(sess, "x11") == 0);
+    int is_gnome = (desktop && strstr(desktop, "GNOME") != NULL);
 
-    if (is_x11) {
-        // Try native XKB first
-        if (XkbLockGroup(main_window->display, XkbUseCoreKbd, layout_group)) {
-            switched = 1;
-        }
+    // Always attempt GNOME switch if GNOME is present (works on both Wayland/Xorg)
+    if (is_gnome) {
+        try_switch_via_gnome(layout_group);
     }
 
-    if (!switched) {
-        // Try GNOME Shell / GSettings
-        switched = try_switch_via_gnome(layout_group);
-    }
-
-    if (!switched && !is_x11) {
-        // As a last fallback (useful under XWayland)
-        XkbLockGroup(main_window->display, XkbUseCoreKbd, layout_group);
-    }
+    // Also try native XKB to affect X11/XWayland clients
+    XkbLockGroup(main_window->display, XkbUseCoreKbd, layout_group);
 }
 
 void set_next_keyboard_group(struct _xneur_handle *handle)
