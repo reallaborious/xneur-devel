@@ -1761,7 +1761,15 @@ struct _xneur_config* xneur_config_init(void)
 
 	p->pid = -1;
 
-	p->handle = xneur_handle_create();
+    // Initialize XNeur handle (requires X11 display).
+    // If it fails, return NULL to avoid dereferencing a NULL handle later.
+    p->handle = xneur_handle_create();
+    if (p->handle == NULL)
+    {
+        log_message(ERROR, _("Can't init X connection (DISPLAY not available or XKB unsupported)"));
+        free(p);
+        return NULL;
+    }
 
 	p->delimeters = (KeySym *) malloc(sizeof(KeySym));
 	p->delimeters_string = (char *) malloc(sizeof(char));

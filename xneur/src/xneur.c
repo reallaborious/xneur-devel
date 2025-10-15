@@ -456,12 +456,12 @@ int main(int argc, char *argv[])
 
 	xneur_reklama();
 
-	xconfig = xneur_config_init();
-	if (xconfig == NULL)
-	{
-		log_message(ERROR, _("Can't init libxnconfig"));
-		exit(EXIT_FAILURE);
-	}
+    xconfig = xneur_config_init();
+    if (xconfig == NULL)
+    {
+        log_message(ERROR, _("Failed to initialize configuration (X display not available?)"));
+        exit(EXIT_FAILURE);
+    }
 
 	xneur_set_lock();
 	xneur_load_config();
