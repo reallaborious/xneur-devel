@@ -1,0 +1,1 @@
+/usr/bin/cc -O3 -DNDEBUG -rdynamic -Xlinker --dependency-file=CMakeFiles/xneur-bin.dir/link.d "CMakeFiles/xneur-bin.dir/xneur.c.o" -o xneur  -Wl,-rpath,/workspace/build/lib/lib:/workspace/build/lib/config: libnewlang_creation.a ../lib/lib/libxneur.so.20.0.0 ../lib/config/libxnconfig.so.20.0.0 -lX11 -lXtst -lXi -lpcre -lpthread -lz

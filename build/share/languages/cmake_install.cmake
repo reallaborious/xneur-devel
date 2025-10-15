@@ -1,0 +1,76 @@
+# Install script for directory: /workspace/xneur/share/languages
+
+# Set the install prefix
+if(NOT DEFINED CMAKE_INSTALL_PREFIX)
+  set(CMAKE_INSTALL_PREFIX "/usr/local")
+endif()
+string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+
+# Set the install configuration name.
+if(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
+  if(BUILD_TYPE)
+    string(REGEX REPLACE "^[^A-Za-z0-9_]+" ""
+           CMAKE_INSTALL_CONFIG_NAME "${BUILD_TYPE}")
+  else()
+    set(CMAKE_INSTALL_CONFIG_NAME "Release")
+  endif()
+  message(STATUS "Install configuration: \"${CMAKE_INSTALL_CONFIG_NAME}\"")
+endif()
+
+# Set the component getting installed.
+if(NOT CMAKE_INSTALL_COMPONENT)
+  if(COMPONENT)
+    message(STATUS "Install component: \"${COMPONENT}\"")
+    set(CMAKE_INSTALL_COMPONENT "${COMPONENT}")
+  else()
+    set(CMAKE_INSTALL_COMPONENT)
+  endif()
+endif()
+
+# Install shared libraries without execute permission?
+if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
+  set(CMAKE_INSTALL_SO_NO_EXE "1")
+endif()
+
+# Is this installation the result of a crosscompile?
+if(NOT DEFINED CMAKE_CROSSCOMPILING)
+  set(CMAKE_CROSSCOMPILING "FALSE")
+endif()
+
+# Set path to fallback-tool for dependency-resolution.
+if(NOT DEFINED CMAKE_OBJDUMP)
+  set(CMAKE_OBJDUMP "/usr/bin/objdump")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for each subdirectory.
+  include("/workspace/build/share/languages/am/cmake_install.cmake")
+  include("/workspace/build/share/languages/bg/cmake_install.cmake")
+  include("/workspace/build/share/languages/by/cmake_install.cmake")
+  include("/workspace/build/share/languages/cz/cmake_install.cmake")
+  include("/workspace/build/share/languages/de/cmake_install.cmake")
+  include("/workspace/build/share/languages/ge/cmake_install.cmake")
+  include("/workspace/build/share/languages/gr/cmake_install.cmake")
+  include("/workspace/build/share/languages/ee/cmake_install.cmake")
+  include("/workspace/build/share/languages/en/cmake_install.cmake")
+  include("/workspace/build/share/languages/es/cmake_install.cmake")
+  include("/workspace/build/share/languages/fr/cmake_install.cmake")
+  include("/workspace/build/share/languages/gb/cmake_install.cmake")
+  include("/workspace/build/share/languages/kz/cmake_install.cmake")
+  include("/workspace/build/share/languages/lt/cmake_install.cmake")
+  include("/workspace/build/share/languages/lv/cmake_install.cmake")
+  include("/workspace/build/share/languages/pl/cmake_install.cmake")
+  include("/workspace/build/share/languages/ro/cmake_install.cmake")
+  include("/workspace/build/share/languages/ru/cmake_install.cmake")
+  include("/workspace/build/share/languages/ua/cmake_install.cmake")
+  include("/workspace/build/share/languages/us/cmake_install.cmake")
+  include("/workspace/build/share/languages/uz/cmake_install.cmake")
+
+endif()
+
+string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
+       "${CMAKE_INSTALL_MANIFEST_FILES}")
+if(CMAKE_INSTALL_LOCAL_ONLY)
+  file(WRITE "/workspace/build/share/languages/install_local_manifest.txt"
+     "${CMAKE_INSTALL_MANIFEST_CONTENT}")
+endif()
