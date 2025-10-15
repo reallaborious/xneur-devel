@@ -1,13 +1,16 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build-with-enchant:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v4
     - name: Build
       uses: lpenz/ghaction-cmake@v0.2
       with:
@@ -18,10 +21,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v4
     - name: Analyze
       uses: lpenz/ghaction-cmake@v0.2
       with:
         dependencies: gettext libgstreamer1.0-dev libnotify-dev libenchant-dev libxi-dev libxtst-dev
         directory: xneur
         analyzer: clang-tidy
+
+  build-min-ubuntu-22-04:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Install minimal deps
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gettext pkg-config cmake build-essential \
+          libx11-dev libxext-dev libxi-dev libxtst-dev libpcre3-dev zlib1g-dev
+    - name: Configure (minimal features)
+      run: cmake -S xneur -B build -DCMAKE_BUILD_TYPE=Release -DSOUNDS=OFF -DSPELL=OFF -DNOTIFICATIONS=OFF -DPLUGINS=OFF
+    - name: Build
+      run: cmake --build build -j2
