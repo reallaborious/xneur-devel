@@ -42,6 +42,9 @@ lib/lib/CMakeFiles/xnlib.dir/__/main/switchlang.c.o: \
   /usr/lib/llvm-20/lib/clang/20/include/__stddef_null.h \
   /usr/lib/llvm-20/lib/clang/20/include/__stddef_offsetof.h \
   /usr/include/X11/extensions/XKBstr.h /usr/include/X11/extensions/XKB.h \
+  /usr/include/X11/extensions/XTest.h \
+  /usr/include/X11/extensions/xtestconst.h \
+  /usr/include/X11/extensions/XInput.h /usr/include/X11/extensions/XI.h \
   /usr/include/stdlib.h \
   /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
   /usr/include/x86_64-linux-gnu/bits/waitflags.h \
@@ -77,8 +80,6 @@ lib/lib/CMakeFiles/xnlib.dir/__/main/switchlang.c.o: \
   /workspace/xneur/lib/main/keymap.h \
   /workspace/xneur/lib/lib/../misc/types.h \
   /workspace/xneur/lib/lib/../misc/debug.h \
-  /workspace/xneur/lib/main/utils.h /usr/include/X11/extensions/XTest.h \
-  /usr/include/X11/extensions/xtestconst.h \
-  /usr/include/X11/extensions/XInput.h /usr/include/X11/extensions/XI.h \
+  /workspace/xneur/lib/main/utils.h \
   /workspace/xneur/lib/lib/../misc/log.h \
   /workspace/xneur/lib/main/switchlang.h
