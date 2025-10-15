@@ -135,7 +135,12 @@ struct _xneur_handle *xneur_handle_create (void)
 		return NULL;
 	}
 
-	Display *display = XOpenDisplay(NULL);
+    Display *display = XOpenDisplay(NULL);
+    if (display == NULL)
+    {
+        free(handle);
+        return NULL;
+    }
 
 	/*char *names[XkbNumKbdGroups];
 	int gc = get_layout(display, names);
@@ -146,7 +151,13 @@ struct _xneur_handle *xneur_handle_create (void)
 	}
 	free_layout(names, gc);*/
 
-	XkbGetNames(display, XkbAllNamesMask, kbd_desc_ptr);
+    if (XkbGetNames(display, XkbAllNamesMask, kbd_desc_ptr) != Success)
+    {
+        XCloseDisplay(display);
+        XkbFreeKeyboard(kbd_desc_ptr, XkbAllComponentsMask, True);
+        free(handle);
+        return NULL;
+    }
 
 	if (kbd_desc_ptr->names == NULL)
 	{
