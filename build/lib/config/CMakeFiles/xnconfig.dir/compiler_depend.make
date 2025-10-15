@@ -2125,6 +2125,7 @@ lib/config/CMakeFiles/xnconfig.dir/xnconfig_files.c.o: /workspace/xneur/lib/conf
   /usr/include/features-time64.h \
   /usr/include/features.h \
   /usr/include/linux/errno.h \
+  /usr/include/pwd.h \
   /usr/include/stdc-predef.h \
   /usr/include/stdio.h \
   /usr/include/stdlib.h \
@@ -2271,6 +2272,8 @@ lib/config/CMakeFiles/xnconfig.dir/__/main/selection.c.o:
 lib/config/CMakeFiles/xnconfig.dir/__/main/program.c.o:
 
 lib/config/CMakeFiles/xnconfig.dir/__/main/plugin.c.o:
+
+lib/config/CMakeFiles/xnconfig.dir/__/main/event.c.o:
 
 /usr/include/x86_64-linux-gnu/sys/stat.h:
 
@@ -2652,6 +2655,8 @@ lib/config/CMakeFiles/xnconfig.dir/__/main/switchlang.c.o:
 
 /usr/include/x86_64-linux-gnu/bits/sigaction.h:
 
+/usr/include/pwd.h:
+
 /usr/include/x86_64-linux-gnu/bits/signal_ext.h:
 
 lib/config/CMakeFiles/xnconfig.dir/__/main/keymap.c.o:
@@ -2711,8 +2716,6 @@ lib/config/CMakeFiles/xnconfig.dir/__/main/focus.c.o:
 /usr/include/x86_64-linux-gnu/bits/types/sigset_t.h:
 
 /usr/include/asm-generic/bitsperlong.h:
-
-lib/config/CMakeFiles/xnconfig.dir/__/main/event.c.o:
 
 /usr/include/zconf.h:
 

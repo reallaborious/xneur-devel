@@ -2152,6 +2152,7 @@ lib/config/CMakeFiles/xnconfig.dir/xnconfig_files.c.o
  /usr/include/features-time64.h
  /usr/include/features.h
  /usr/include/linux/errno.h
+ /usr/include/pwd.h
  /usr/include/stdc-predef.h
  /usr/include/stdio.h
  /usr/include/stdlib.h
