@@ -459,7 +459,7 @@ int main(int argc, char *argv[])
     xconfig = xneur_config_init();
     if (xconfig == NULL)
     {
-        log_message(ERROR, _("Failed to initialize configuration (X display not available?)"));
+        log_message(ERROR, _("Failed to initialize configuration: X display unavailable or XKB unsupported. Set DISPLAY and run inside a graphical session."));
         exit(EXIT_FAILURE);
     }
 
