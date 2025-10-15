@@ -1,0 +1,2 @@
+/usr/bin/ar qc libnewlang_creation.a CMakeFiles/newlang_creation.dir/newlang_creation.c.o
+/usr/bin/ranlib libnewlang_creation.a

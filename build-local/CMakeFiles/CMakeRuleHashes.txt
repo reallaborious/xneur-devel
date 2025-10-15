@@ -1,0 +1,7 @@
+# Hashes of file build rules.
+98e7f185bf90c0487b73d51f881b2da0 po/CMakeFiles/translations
+fdc5565d71a36137d7fa5451d2e78294 po/be.gmo
+4a8b9759a23a2af0fb69c130e1320c2a po/de.gmo
+86d866040e7d4af1e0ceb40b3a77e532 po/ro.gmo
+dd2a4a8d03483622ad045e734acad1d6 po/ru.gmo
+85d9af5f5214a79602cc526690aadbbd po/uk.gmo
