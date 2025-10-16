@@ -86,3 +86,7 @@ xneurchecker/xneurchecker.anjuta
 
 # cmake build directories
 */build/*
+
+# local build output
+build-local/
+out/
